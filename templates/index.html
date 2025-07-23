@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ko's secretary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #F7F8FA;
+      --card-bg: #FFFFFF;
+      --text-color: #343541;
+      --subtle-text: #6B6C7B;
+      --primary-accent: #20B2AA; /* Seafoam Green - unique touch */
+      --secondary-accent: #E0F7FA; /* Lighter shade for background elements */
+      --border-color: #ECECF1;
+      --shadow-light: rgba(0, 0, 0, 0.05);
+      --shadow-medium: rgba(0, 0, 0, 0.1);
+
+      --user-bubble-bg: var(--primary-accent);
+      --user-bubble-text: #FFFFFF;
+      --bot-bubble-bg: var(--secondary-accent);
+      --bot-bubble-text: var(--text-color);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-color);
+    }
+
+    .chat-wrapper {
+      width: 100%;
+      max-width: 800px; /* Wider for more content */
+      height: 90vh; /* Taller to fill more screen */
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 15px 40px var(--shadow-medium);
+      border-radius: 16px;
+      overflow: hidden;
+      background-color: var(--card-bg);
+    }
+
+    .chat-header {
+      padding: 20px 30px;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .chat-header h2 {
+      margin: 0;
+      font-size: 1.6em;
+      font-weight: 600;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-header h2 i {
+      color: var(--primary-accent);
+    }
+
+    .chat-box {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 20px 30px;
+      background-color: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      gap: 15px; /* Increased gap for better separation */
+      scroll-behavior: smooth; /* Smooth scrolling for new messages */
+    }
+
+    /* Scrollbar Styling */
+    .chat-box::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-box::-webkit-scrollbar-track {
+      background: var(--bg-color);
+    }
+    .chat-box::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 10px;
+    }
+    .chat-box::-webkit-scrollbar-thumb:hover {
+      background: var(--subtle-text);
+    }
+
+    .message-container {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      max-width: 100%; /* Ensure container doesn't overflow */
+    }
+
+    .message-container.user {
+      justify-content: flex-end;
+    }
+
+    .message-container.bot {
+      justify-content: flex-start;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--primary-accent);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.9em;
+      flex-shrink: 0; /* Prevent shrinking */
+      box-shadow: 0 2px 5px var(--shadow-light);
+    }
+
+    .avatar.bot {
+      background-color: var(--text-color);
+    }
+
+    .message-bubble {
+      padding: 14px 20px;
+      border-radius: 18px;
+      line-height: 1.6;
+      max-width: calc(100% - 70px); /* Account for avatar and gap */
+      word-wrap: break-word; /* Essential for long messages */
+      box-shadow: 0 1px 3px var(--shadow-light);
+    }
+
+    .message-bubble.user {
+      background-color: var(--user-bubble-bg);
+      color: var(--user-bubble-text);
+      border-bottom-right-radius: 6px; /* Subtle tail effect */
+    }
+
+    .message-bubble.bot {
+      background-color: var(--bot-bubble-bg);
+      color: var(--bot-bubble-text);
+      border-bottom-left-radius: 6px; /* Subtle tail effect */
+    }
+
+    .input-area {
+      padding: 20px 30px;
+      background-color: var(--card-bg);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .message-input {
+      flex: 1;
+      padding: 12px 18px;
+      font-size: 1rem;
+      border-radius: 24px;
+      border: 1px solid var(--border-color);
+      outline: none;
+      transition: all 0.3s ease;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      box-shadow: inset 0 1px 2px var(--shadow-light);
+    }
+
+    .message-input::placeholder {
+      color: var(--subtle-text);
+    }
+
+    .message-input:focus {
+      border-color: var(--primary-accent);
+      box-shadow: 0 0 0 3px rgba(32, 178, 170, 0.15); /* Primary accent with transparency */
+      background-color: var(--card-bg);
+    }
+
+    .send-button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      background-color: var(--primary-accent);
+      color: white;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px var(--shadow-light);
+    }
+
+    .send-button:hover {
+      background-color: var(--primary-accent); /* Keep same color on hover */
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px var(--shadow-medium);
+    }
+
+    .send-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 5px var(--shadow-light);
+    }
+
+    .loading-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      background-color: var(--subtle-text);
+      border-radius: 50%;
+      animation: bounce 0.8s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-6px);
+      }
+    }
+
+    .error-message {
+      color: #D32F2F; /* Red for errors */
+      font-size: 0.9em;
+      margin-top: 5px;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      .chat-wrapper {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .chat-header, .input-area {
+        padding: 15px 20px;
+      }
+
+      .chat-box {
+        padding: 15px 20px;
+        gap: 10px;
+      }
+
+      .message-bubble {
+        padding: 12px 16px;
+        font-size: 0.95em;
+      }
+
+      .message-input {
+        padding: 10px 15px;
+      }
+
+      .send-button {
+        padding: 10px 18px;
+        font-size: 0.95em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-wrapper">
+    <div class="chat-header">
+      <h2><i class="fas fa-robot"></i> Ko's secretary</h2>
+    </div>
+    <div id="chat-box" class="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="message" class="message-input" placeholder="Send a message..." />
+      <button onclick="sendMessage()" class="send-button">
+        <i class="fas fa-paper-plane"></i> Send
+      </button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const msgInput = document.getElementById("message");
+      const msg = msgInput.value.trim();
+      if (!msg) return;
+
+      const chatBox = document.getElementById("chat-box");
+
+      // Add user message
+      const userMessageContainer = document.createElement('div');
+      userMessageContainer.classList.add('message-container', 'user');
+      userMessageContainer.innerHTML = `
+        <div class="message-bubble user">${msg}</div>
+        <div class="avatar user">YOU</div>
+      `;
+      chatBox.appendChild(userMessageContainer);
+
+      msgInput.value = ""; // Clear input immediately
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        // Add loading indicator
+        const loadingContainer = document.createElement('div');
+        loadingContainer.classList.add('message-container', 'bot', 'loading');
+        loadingContainer.innerHTML = `
+          <div class="avatar bot"><i class="fas fa-robot"></i></div>
+          <div class="message-bubble bot">
+            <div class="loading-dots">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        `;
+        chatBox.appendChild(loadingContainer);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Remove loading indicator
+        chatBox.removeChild(loadingContainer);
+
+        // Add bot response
+        const botMessageContainer = document.createElement('div');
+        botMessageContainer.classList.add('message-container', 'bot');
+        botMessageContainer.innerHTML = `
+          <div class="avatar bot"><i class="fas fa-robot"></i></div>
+          <div class="message-bubble bot">${data.response}</div>
+        `;
+        chatBox.appendChild(botMessageContainer);
+
+      } catch (error) {
+        console.error("Error sending message:", error);
+        // Remove loading indicator if still present
+        const existingLoading = chatBox.querySelector('.loading');
+        if (existingLoading) {
+            chatBox.removeChild(existingLoading);
+        }
+        // Display an error message to the user
+        const errorMessageContainer = document.createElement('div');
+        errorMessageContainer.classList.add('message-container', 'bot');
+        errorMessageContainer.innerHTML = `
+          <div class="avatar bot"><i class="fas fa-robot"></i></div>
+          <div class="message-bubble bot error-message">
+            <i class="fas fa-exclamation-triangle"></i> Oops! Something went wrong. Please try again.
+          </div>
+        `;
+        chatBox.appendChild(errorMessageContainer);
+
+      } finally {
+        chatBox.scrollTop = chatBox.scrollHeight; // Ensure scroll to bottom
+      }
+    }
+
+    // Send message on Enter key press
+    document.getElementById("message").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
